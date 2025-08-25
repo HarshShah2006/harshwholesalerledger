@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wholesaler Ledger — Web</title>
+  <style>
+    :root{
+      --bg1: #0f1724;
+      --grad-a: #4f46e5;
+      --grad-b: #9333ea;
+      --accent: #10B981;
+      --amber: #F59E0B;
+      --danger: #EF4444;
+      --glass: rgba(255,255,255,0.06);
+      --muted: rgba(255,255,255,0.72);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue"; color:#fff}
+    body{
+      background: radial-gradient(800px 600px at 10% 10%, rgba(79,70,229,0.12), transparent),
+                  linear-gradient(120deg,var(--grad-a),var(--grad-b));
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding-bottom:120px;
+    }
+    #splash {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100dvh; /* For mobile to cover dynamic viewport heights */
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.06));
+  animation: splashFade 1s ease 1.4s forwards;
+}
+    .splashCard{
+      width:220px; height:220px; border-radius:30px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--grad-a),var(--grad-b));
+      box-shadow: 0 22px 66px rgba(0,0,0,0.47), inset 0 1px 0 rgba(255,255,255,0.12);
+      transform: scale(.94);
+      animation: splashPop .65s ease-out forwards;
+    }
+    .splashCard .logo{font-size:56px;margin-bottom:8px}
+    .splashCard .title{font-weight:800; letter-spacing:0.6px; font-size:22px;}
+    .splashCard .devby{
+      margin-top:12px;
+      font-size:15px;
+      color:rgba(255,255,255,0.93);
+      font-weight:700;
+      letter-spacing:0.2px;
+      font-family: inherit;
+      text-align: center;
+    }
+    @keyframes splashFade{ to{opacity:0; visibility:hidden} }
+    @keyframes splashPop{ to{transform:scale(1)} }
+    header.appbar{
+      position:sticky; top:0; z-index:5;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; padding:14px 16px;
+      backdrop-filter: blur(6px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .brand{
+      display:flex; gap:12px; align-items:center;
+    }
+    .brand .logoMini{
+      width:44px; height:44px; border-radius:10px;
+      display:grid; place-items:center; background:linear-gradient(135deg,var(--grad-a),var(--grad-b));
+      font-size:20px; box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      font-weight:800;
+    }
+    .brand .title{font-weight:800; letter-spacing:0.6px}
+    .controls{display:flex; gap:8px; align-items:center}
+    .container{
+      max-width:980px; margin:20px auto; padding:0 16px;
+    }
+    .stats{
+      display:grid; grid-template-columns: repeat(2,1fr); gap:12px; margin-bottom:18px;
+    }
+    .statCard{
+      background:var(--glass); padding:14px; border-radius:14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.28);
+    }
+    .statLabel{font-size:12px; color:rgba(255,255,255,0.8); margin-bottom:6px; font-weight:700}
+    .statValue{font-size:20px; font-weight:800}
+    .grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-radius:16px; padding:14px; min-height:150px;
+      border:1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 12px 40px rgba(2,6,23,0.45);
+      display:flex; flex-direction:column; gap:10px;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(2,6,23,0.6); }
+    .cardTop{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+    .factoryName{ font-size:18px; font-weight:800; color:#FFF0C2; max-width:66%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .statusChip{ padding:8px 10px; border-radius:999px; font-weight:800; font-size:12px; color:#08121A; }
+    .chipGreen{ background: rgba(16,185,129,0.16); border:1px solid rgba(16,185,129,0.22) }
+    .chipAmber{ background: rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.18) }
+    .chipRed{ background: rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.18) }
+    .meta{
+      display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:6px;
+    }
+    .kv{ background: rgba(255,255,255,0.03); padding:10px; border-radius:10px; font-size:13px; }
+    .kv .k{ color:rgba(255,255,255,0.8); font-weight:700; font-size:12px; }
+    .kv .v{ font-weight:800; margin-top:6px; font-size:15px; }
+    .progressWrap{ margin-top:8px; display:flex; gap:10px; align-items:center; }
+    .progressBar{
+      height:10px; flex:1; background: rgba(255,255,255,0.04); border-radius:999px; overflow:hidden;
+    }
+    .progressFill{ height:100%; background: linear-gradient(90deg,var(--grad-a),var(--grad-b)); width:0%; transition: width .5s ease; }
+    .cardActions{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap }
+    .btn { background:#fff; color:#12263a; border:none; padding:10px 12px; border-radius:10px; font-weight:800; cursor:pointer }
+    .btn.ghost{ background:transparent; color:#fff;border:1px solid rgba(255,255,255,0.08) }
+    .history{
+      margin-top:10px; padding:8px 6px; display:flex; flex-direction:column; gap:8px;
+      max-height:220px; overflow:auto;
+    }
+    .entry{
+      display:flex; align-items:center; gap:12px; background: rgba(255,255,255,0.03); border-radius:10px; padding:8px;
+    }
+    .dot{ width:10px; height:10px; border-radius:50%; background:var(--grad-b) }
+    .entryDate{ font-size:13px; color:var(--muted); min-width:95px }
+    .entryAmt{ margin-left:auto; font-weight:800; color:#fff }
+    .fab{
+      position:fixed; right:18px; bottom:22px; z-index:9;
+      width:64px; height:64px; border-radius:16px; border:none; cursor:pointer;
+      background:linear-gradient(135deg,var(--grad-a),var(--grad-b)); color:#fff; font-size:28px; font-weight:900;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.4);
+    }
+    .modalBackdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:99 }
+    .modal{ background: #0b1220; color:#fff; border-radius:14px; width:min(560px,94%); padding:16px; box-shadow:0 12px 40px rgba(0,0,0,0.7) }
+    .formRow{ display:flex; gap:10px; margin-top:10px }
+    .formCol{ flex:1 }
+    label{ display:block; font-size:13px; color:rgba(255,255,255,0.85); margin-bottom:6px; font-weight:700 }
+    input[type="text"], input[type="number"], input[type="date"]{
+      width:100%; padding:10px; border-radius:8px; border:none; outline:none; font-size:14px;
+      background: rgba(255,255,255,0.03); color:#fff;
+    }
+    .modalFooter{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px }
+    @media (max-width:520px){
+      .stats{ grid-template-columns:1fr 1fr }
+      .brand .title { font-size:16px }
+      header.appbar{ padding:12px }
+    }
+  </style>
+  <!-- jsPDF CDN for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <!-- SPLASH -->
+  <!-- Splash Screen -->
+        <div id="splash">
+        <h1>📒 Wholesaler Ledger</h1>
+        <p>Developed By Harsh Shah</p>
+        </div>
+
+        <style>
+        #splash {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            transition: opacity 1s ease-out, visibility 1s ease-out;
+        }
+        #splash h1 {
+            font-size: 36px;
+            font-weight: bold;
+            color: #fff;
+            margin: 0;
+            animation: fadeInUp 1.5s ease-in-out;
+        }
+        #splash p {
+            font-size: 16px;
+            margin-top: 10px;
+            opacity: 0.8;
+            animation: fadeInUp 2s ease-in-out;
+        }
+        @keyframes fadeInUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        #splash.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        </style>
+
+        <script>
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+            document.getElementById("splash").classList.add("hidden");
+            }, 2000); // splash stays visible for 2 seconds
+        });
+        </script>
+  <!-- APPBAR -->
+  <header class="appbar">
+    <div class="brand">
+      <div class="logoMini">WL</div>
+      <div>
+        <div class="title">Wholesaler Ledger</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.85)">Developed By Harsh Shah</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn ghost" id="exportAllBtn" title="Export all factories as PDF">Export All</button>
+    </div>
+  </header>
+  <!-- MAIN -->
+  <main class="container">
+    <section class="stats">
+      <div class="statCard">
+        <div class="statLabel">Total Contracts</div>
+        <div class="statValue" id="totalContracts">₹0</div>
+      </div>
+      <div class="statCard">
+        <div class="statLabel">Total Remaining</div>
+        <div class="statValue" id="totalRemaining">₹0</div>
+      </div>
+    </section>
+    <section>
+      <div class="grid" id="factoryGrid">
+        <!-- cards will be injected here -->
+      </div>
+    </section>
+  </main>
+  <!-- FAB -->
+  <button class="fab" id="openAddFactory">＋</button>
+  <!-- ADD FACTORY MODAL -->
+  <div class="modalBackdrop" id="factoryModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="factoryTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div id="factoryTitle" style="font-weight:900;font-size:18px">Add Factory</div>
+        <button class="btn ghost" id="closeFactory">Close</button>
+      </div>
+      <div style="margin-top:12px">
+        <label>Factory Name</label>
+        <input type="text" id="fName" placeholder="e.g., ABC Textiles">
+        <div class="formRow">
+          <div class="formCol">
+            <label>Contract Amount (₹)</label>
+            <input type="number" id="fContract" placeholder="1000000" min="0">
+          </div>
+          <div class="formCol">
+            <label>Monthly Installment (₹)</label>
+            <input type="number" id="fMonthly" placeholder="200000" min="0">
+          </div>
+        </div>
+        <div class="modalFooter">
+          <button class="btn" id="saveFactory">Save Factory</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ADD PAYMENT MODAL -->
+  <div class="modalBackdrop" id="paymentModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div id="paymentTitle" style="font-weight:900;font-size:18px">Add Payment</div>
+        <button class="btn ghost" id="closePayment">Close</button>
+      </div>
+      <div style="margin-top:12px">
+        <label>Amount (₹)</label>
+        <input type="number" id="pAmount" placeholder="200000" min="0">
+        <label style="margin-top:10px">Date</label>
+        <input type="date" id="pDate">
+        <div class="modalFooter">
+          <button class="btn" id="savePayment">Add Payment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    /* --- Utilities & State --- */
+    const STORE_KEY = 'wl_factories_v2';
+    let factories = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
+
+    function save() {
+      localStorage.setItem(STORE_KEY, JSON.stringify(factories));
+      render();
+    }
+    function formatIN(n) {
+      return '₹' + (Number(n||0)).toLocaleString('en-IN');
+    }
+    function sanitizeFileName(s) {
+      return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'factory';
+    }
+    window.addEventListener('load', () => {
+      const today = new Date().toISOString().slice(0,10);
+      $('#pDate').value = today;
+      setTimeout(() => {
+        const sp = $('#splash');
+        if (sp) sp.style.display = 'none';
+      }, 1600);
+    });
+    function computeTotals() {
+      const totalContracts = factories.reduce((s,f)=>s + Number(f.contract||0), 0);
+      const totalPaid = factories.reduce((s,f)=>s + (f.payments||[]).reduce((a,b)=>a + Number(b.amount||0),0), 0);
+      const totalRemaining = Math.max(totalContracts - totalPaid, 0);
+      return { totalContracts, totalPaid, totalRemaining };
+    }
+    // Indian date format DD/MM/YYYY
+    function formatDate(d) {
+      const dt = new Date(d);
+      if (isNaN(dt)) return d;
+      const day = ('0' + dt.getDate()).slice(-2);
+      const month = ('0' + (dt.getMonth() + 1)).slice(-2);
+      const year = dt.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+    function escapeHtml(s){
+      return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function render() {
+      const totals = computeTotals();
+      $('#totalContracts').textContent = formatIN(totals.totalContracts);
+      $('#totalRemaining').textContent = formatIN(totals.totalRemaining);
+
+      const grid = $('#factoryGrid');
+      grid.innerHTML = '';
+
+      if (!factories.length) {
+        const empty = document.createElement('div');
+        empty.className = 'card';
+        empty.style.textAlign = 'center';
+        empty.innerHTML = `<div style="opacity:0.95; font-weight:900; font-size:16px; color:#fff2">No factories yet</div>
+                           <div style="margin-top:8px; color:rgba(255,255,255,0.85)">Tap the + button to add a factory</div>`;
+        grid.appendChild(empty);
+        return;
+      }
+
+      factories.forEach((f, idx) => {
+        const paid = (f.payments||[]).reduce((s,p)=>s + Number(p.amount||0), 0);
+        const remaining = Math.max(Number(f.contract||0) - paid, 0);
+        const pct = f.contract ? Math.round((paid / f.contract) * 100) : 0;
+
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="cardTop">
+            <div class="factoryName" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div>
+            <div id="chip-${idx}" class="statusChip">${paid===0 ? 'Not started' : (remaining===0 ? 'Completed' : 'In progress')}</div>
+          </div>
+          <div class="meta">
+            <div class="kv"><div class="k">Contract</div><div class="v">${formatIN(f.contract)}</div></div>
+            <div class="kv"><div class="k">Monthly</div><div class="v">${formatIN(f.monthly)}</div></div>
+            <div class="kv"><div class="k">Paid</div><div class="v" style="color:var(--accent)">${formatIN(paid)}</div></div>
+            <div class="kv"><div class="k">Remaining</div><div class="v" style="color:var(--danger)">${formatIN(remaining)}</div></div>
+          </div>
+          <div class="progressWrap">
+            <div style="font-weight:800; font-size:13px">${pct}%</div>
+            <div class="progressBar"><div class="progressFill" style="width:${pct}%"></div></div>
+            <div style="min-width:50px; text-align:right; color:rgba(255,255,255,0.85)">${formatIN(remaining)}</div>
+          </div>
+          <div class="cardActions">
+            <button class="btn" data-act="add" data-i="${idx}">➕ Add Payment</button>
+            <button class="btn ghost" data-act="export" data-i="${idx}">📤 Export PDF</button>
+            <button class="btn ghost" data-act="delete" data-i="${idx}" style="background:rgba(255,255,255,0.04)">🗑 Delete</button>
+          </div>
+          <div class="history" aria-live="polite">
+            <h4 style="margin:0 0 6px 0; font-size:14px; font-weight:900; color:#ffe8b0">Payment History</h4>
+            ${
+              (f.payments && f.payments.length)
+                ? f.payments.slice().sort((a,b)=> new Date(b.date) - new Date(a.date)).map((p, pidx) => `
+                    <div class="entry">
+                      <div class="dot" style="background:linear-gradient(135deg,var(--grad-a),var(--grad-b))"></div>
+                      <div class="entryDate">${escapeHtml(formatDate(p.date))}</div>
+                      <div class="entryAmt">${formatIN(p.amount)}</div>
+                      <button class="btn ghost" data-act="delpay" data-idx="${idx}" data-pidx="${pidx}" title="Delete Payment" style="padding:4px 8px;font-size:12px;">🗑</button>
+                    </div>
+                  `).join('')
+                : `<div class="entry" style="justify-content:center; color:rgba(255,255,255,0.8)">No payments yet</div>`
+            }
+          </div>
+        `;
+
+        grid.appendChild(card);
+
+        const chip = card.querySelector(`#chip-${idx}`);
+        if (paid === 0) chip.classList.add('chipRed');
+        else if (remaining === 0) chip.classList.add('chipGreen');
+        else chip.classList.add('chipAmber');
+      });
+
+      $$('.card').forEach((c, i) => {
+        const addBtn = c.querySelector('[data-act="add"]');
+        const exportBtn = c.querySelector('[data-act="export"]');
+        const delBtn = c.querySelector('[data-act="delete"]');
+        if (addBtn) addBtn.onclick = () => openPaymentModal(Number(addBtn.dataset.i));
+        if (exportBtn) exportBtn.onclick = () => exportFactoryPdf(Number(exportBtn.dataset.i));
+        if (delBtn) delBtn.onclick = () => { if (confirm('Delete this factory and all payments?')) { factories.splice(Number(delBtn.dataset.i),1); save(); } };
+        c.querySelectorAll('[data-act="delpay"]').forEach(btn=>{
+          btn.onclick = ()=>{
+            const factoryIdx = Number(btn.getAttribute('data-idx'));
+            const payIdx = Number(btn.getAttribute('data-pidx'));
+            if (confirm('Delete this payment?')) {
+              factories[factoryIdx].payments.splice(payIdx,1);
+              save();
+            }
+          };
+        });
+      });
+    }
+
+    /* --- Add Factory modal logic --- */
+    const factoryModal = $('#factoryModal');
+    $('#openAddFactory').onclick = () => {
+      factoryModal.style.display = 'flex';
+      $('#fName').focus();
+    };
+    $('#closeFactory').onclick = () => factoryModal.style.display = 'none';
+    $('#saveFactory').onclick = () => {
+      const name = $('#fName').value.trim();
+      const contract = Number($('#fContract').value || 0);
+      const monthly = Number($('#fMonthly').value || 0);
+      if (!name) { alert('Enter factory name'); return; }
+      if (!contract || contract <= 0) { alert('Enter contract amount'); return; }
+      factories.unshift({ id: cryptoRandom(), name, contract, monthly, payments: [] });
+      $('#fName').value = ''; $('#fContract').value = ''; $('#fMonthly').value = '';
+      factoryModal.style.display = 'none';
+      save();
+    };
+
+    /* --- Add Payment modal logic --- */
+    let currentPayFactoryIdx = null;
+    const payModal = $('#paymentModal');
+    $('#closePayment').onclick = () => payModal.style.display = 'none';
+    $('#savePayment').onclick = () => {
+      const amount = Number($('#pAmount').value || 0);
+      const date = $('#pDate').value;
+      if (!amount || amount <= 0) { alert('Enter valid amount'); return; }
+      if (!date) { alert('Select date'); return; }
+      const f = factories[currentPayFactoryIdx];
+      f.payments = f.payments || [];
+      const paidAlready = f.payments.reduce((s,p)=>s + Number(p.amount||0), 0);
+      if (paidAlready + amount > Number(f.contract)) {
+        alert('Error: Payment exceeds contract amount.');
+        return;
+      }
+      f.payments.push({ amount, date });
+      $('#pAmount').value = '';
+      payModal.style.display = 'none';
+      save();
+    };
+
+    function openPaymentModal(idx) {
+      currentPayFactoryIdx = idx;
+      $('#pDate').value = new Date().toISOString().slice(0,10);
+      $('#pAmount').value = '';
+      $('#paymentTitle').textContent = 'Add Payment — ' + factories[idx].name;
+      payModal.style.display = 'flex';
+      $('#pAmount').focus();
+    }
+
+    /* --- PDF Export logic --- */
+    function exportFactoryPdf(idx) {
+      const f = factories[idx];
+      const nf = (n) => Number(n||0).toLocaleString('en-IN');
+      const totalPaid = (f.payments||[]).reduce((s,p)=>s + Number(p.amount||0), 0);
+      const remaining = Math.max(Number(f.contract||0) - totalPaid, 0);
+      const lines = [
+        `Factory: ${f.name}`,
+        `Total Contract: ₹${nf(f.contract)}`,
+        `Total Paid: ₹${nf(totalPaid)}`,
+        `Remaining: ₹${nf(remaining)}`,
+        ``,
+        `Payment History:`
+      ];
+      if (!(f.payments||[]).length) lines.push('(none)');
+      else {
+        f.payments
+          .slice().sort((a,b)=> new Date(a.date)-new Date(b.date))
+          .forEach(p => {
+            lines.push(`${formatDate(p.date)} - ₹${nf(p.amount)}`);
+          });
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFont('helvetica');
+      doc.setFontSize(12);
+      lines.forEach((line, i) =>
+        doc.text(line, 16, 20 + i * 8)
+      );
+      doc.save(sanitizeFileName(f.name) + '_ledger.pdf');
+    }
+
+    $('#exportAllBtn').onclick = () => {
+      if (!factories.length) { alert('No factories to export'); return; }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 20;
+      factories.forEach((f, idx) => {
+        const nf = (n) => Number(n||0).toLocaleString('en-IN');
+        const totalPaid = (f.payments||[]).reduce((s,p)=>s + Number(p.amount||0), 0);
+        const remaining = Math.max(Number(f.contract||0) - totalPaid, 0);
+        let lines = [
+          `Factory: ${f.name}`,
+          `Total Contract: ₹${nf(f.contract)}`,
+          `Total Paid: ₹${nf(totalPaid)}`,
+          `Remaining: ₹${nf(remaining)}`,
+          `Payment History:`
+        ];
+        if (!(f.payments||[]).length) lines.push('(none)');
+        else {
+          f.payments
+            .slice().sort((a,b)=> new Date(a.date)-new Date(b.date))
+            .forEach(p => {
+              lines.push(`${formatDate(p.date)} - ₹${nf(p.amount)}`);
+            });
+        }
+        lines.forEach(line => {
+          if (y > 280) { doc.addPage(); y = 20; }
+          doc.text(line, 16, y);
+          y += 8;
+        });
+        y += 12; // space between factories
+      });
+      doc.save('wholesaler_ledger_all.pdf');
+    };
+
+    function cryptoRandom() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'id_' + Math.random().toString(36).slice(2,9);
+    }
+
+    /* --- Initial render --- */
+    render();
+    window._wl_save = save;
+  </script>
+</body>
+</html>
